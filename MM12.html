@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vale Mansion Murder Mystery</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-dark: #0f0f0f;
+  --secondary-dark: #1a1a1a;
+  --accent-gold: #d4af37;
+  --accent-blood: #8b0000;
+  --text-light: #e8e6e3;
+  --text-dim: #9a9a9a;
+  --border-glow: rgba(212, 175, 55, 0.3);
+}
+
+body {
+  font-family: 'Crimson Text', serif;
+  color: var(--text-light);
+  background: var(--primary-dark);
+  overflow: hidden;
+  height: 100vh;
+}
+
+#game-container {
+  display: flex;
+  height: 100vh;
+  position: relative;
+}
+
+/* Ambient fog effect */
+#game-container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ========== SIDEBAR ========== */
+#sidebar {
+  width: 320px;
+  background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(10,10,10,0.98) 100%);
+  border-right: 2px solid var(--accent-gold);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.8), inset -1px 0 1px var(--border-glow);
+  overflow-y: auto;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+#sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.5);
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+  background: var(--accent-gold);
+  border-radius: 4px;
+}
+
+.mansion-header {
+  background: linear-gradient(180deg, var(--accent-blood) 0%, #4a0000 100%);
+  padding: 25px 20px;
+  text-align: center;
+  border-bottom: 3px solid var(--accent-gold);
+  box-shadow: 0 4px 15px rgba(139,0,0,0.5);
+}
+
+.mansion-header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+  color: var(--accent-gold);
+}
+
+.mansion-header .subtitle {
+  font-size: 13px;
+  color: #ccc;
+  font-style: italic;
+  letter-spacing: 1px;
+}
+
+.sidebar-section {
+  margin: 20px 15px;
+  padding: 15px;
+  background: rgba(30,30,30,0.6);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.sidebar-section h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-section h3:hover {
+  color: var(--text-light);
+}
+
+.room-evidence-section {
+  margin-bottom: 15px;
+}
+
+.room-evidence-header {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: rgba(20,20,20,0.8);
+  border-left: 3px solid var(--accent-gold);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.room-evidence-header:hover {
+  background: rgba(30,30,30,0.9);
+  padding-left: 15px;
+}
+
+.room-evidence-header .toggle-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.room-evidence-header.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.room-evidence-content {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+.room-evidence-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.clue-item {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+  padding: 8px;
+  background: rgba(20,20,20,0.8);
+  border-left: 3px solid var(--accent-gold);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.clue-item:hover {
+  background: rgba(30,30,30,0.9);
+  transform: translateX(5px);
+}
+
+.clue-icon {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  filter: drop-shadow(0 0 3px var(--accent-gold));
+}
+
+.clue-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.suspects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.suspect-card {
+  background: rgba(20,20,20,0.9);
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.suspect-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.suspect-card:hover::before {
+  left: 100%;
+}
+
+.suspect-card:hover {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 15px var(--border-glow);
+  transform: translateY(-2px);
+}
+
+.suspect-portrait {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-gold);
+  margin: 0 auto 8px;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(212,175,55,0.3);
+}
+
+.suspect-name {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-gold);
+  margin-bottom: 3px;
+}
+
+.suspect-role {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.room-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.room-btn, .action-btn {
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(40,40,40,0.9) 0%, rgba(20,20,20,0.9) 100%);
+  color: var(--text-light);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  font-family: 'Crimson Text', serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.room-btn::before, .action-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(212,175,55,0.2), transparent);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+  border-radius: 50%;
+}
+
+.room-btn:hover::before, .action-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.room-btn:hover, .action-btn:hover {
+  background: linear-gradient(180deg, rgba(60,60,60,0.9) 0%, rgba(30,30,30,0.9) 100%);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 15px var(--border-glow);
+  transform: translateY(-2px);
+}
+
+.action-btn {
+  grid-column: span 2;
+  background: linear-gradient(180deg, rgba(139,0,0,0.3) 0%, rgba(70,0,0,0.3) 100%);
+}
+
+.action-btn:hover {
+  background: linear-gradient(180deg, rgba(139,0,0,0.5) 0%, rgba(70,0,0,0.5) 100%);
+}
+
+/* ========== MAIN PANEL ========== */
+#main-panel {
+  flex: 1;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 1s ease-in-out;
+  overflow: hidden;
+}
+
+#main-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+}
+
+.room-header {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: rgba(10,10,10,0.85);
+  padding: 15px 40px;
+  border: 2px solid var(--accent-gold);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.8), 0 0 20px var(--border-glow);
+  backdrop-filter: blur(10px);
+}
+
+.room-header h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+  text-align: center;
+}
+
+#room-items {
+  position: absolute;
+  bottom: 240px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 5;
+  max-width: 90%;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+  align-items: flex-start;
+}
+
+.item-card {
+  background: rgba(10,10,10,0.9);
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+  backdrop-filter: blur(5px);
+  position: relative;
+  animation: itemFadeIn 0.6s ease backwards;
+  min-width: 100px;
+  max-width: 120px;
+}
+
+@keyframes itemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.item-card:nth-child(1) { animation-delay: 0.1s; }
+.item-card:nth-child(2) { animation-delay: 0.2s; }
+.item-card:nth-child(3) { animation-delay: 0.3s; }
+.item-card:nth-child(4) { animation-delay: 0.4s; }
+
+.item-card:hover {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 25px var(--border-glow), 0 8px 25px rgba(0,0,0,0.9);
+  transform: translateY(-8px) scale(1.05);
+}
+
+.item-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 8px var(--accent-gold));
+}
+
+.item-label {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: var(--accent-gold);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ========== DIALOGUE BOX ========== */
+#dialogue-box {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  max-height: 180px;
+  background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, rgba(0,0,0,0.95) 100%);
+  border: 2px solid var(--accent-gold);
+  border-radius: 12px;
+  padding: 20px;
+  overflow-y: auto;
+  font-size: 15px;
+  line-height: 1.8;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.5);
+  z-index: 5;
+  backdrop-filter: blur(10px);
+}
+
+#dialogue-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+#dialogue-box::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+}
+
+#dialogue-box::-webkit-scrollbar-thumb {
+  background: var(--accent-gold);
+  border-radius: 4px;
+}
+
+.dialogue-line {
+  margin-bottom: 12px;
+  padding-left: 20px;
+  position: relative;
+  animation: dialogueFade 0.5s ease;
+}
+
+@keyframes dialogueFade {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.dialogue-line::before {
+  content: '►';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+}
+
+.clue-found {
+  color: var(--accent-gold);
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(212,175,55,0.5);
+}
+
+/* ========== COMMENTARY ========== */
+#commentary {
+  position: absolute;
+  top: 120px;
+  right: 30px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.95) 0%, rgba(184,134,11,0.95) 100%);
+  color: #000;
+  padding: 15px 20px;
+  border-radius: 10px;
+  max-width: 280px;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(212,175,55,0.6), inset 0 1px 0 rgba(255,255,255,0.3);
+  z-index: 20;
+  opacity: 0;
+  transform: translateX(50px);
+  transition: all 0.5s ease;
+}
+
+#commentary.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ========== SPARKLE EFFECT ========== */
+.sparkle {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  z-index: 30;
+  animation: sparkleAnim 1s ease-out forwards;
+}
+
+@keyframes sparkleAnim {
+  0% {
+    opacity: 1;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(360deg);
+  }
+}
+
+.sparkle::before,
+.sparkle::after {
+  content: '✦';
+  position: absolute;
+  font-size: 30px;
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px var(--accent-gold), 0 0 20px var(--accent-gold);
+}
+
+.sparkle::after {
+  animation: sparkleRotate 1s ease-out;
+}
+
+@keyframes sparkleRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========== ACCUSATION MODAL ========== */
+#accusation-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(10,10,10,0.98) 100%);
+  border: 3px solid var(--accent-gold);
+  border-radius: 15px;
+  padding: 30px;
+  z-index: 100;
+  box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 100px var(--border-glow);
+  overflow-y: auto;
+  animation: modalSlideIn 0.5s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+#accusation-modal h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 26px;
+  color: var(--accent-gold);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 25px;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+}
+
+.modal-section {
+  margin-bottom: 25px;
+}
+
+.modal-section h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  color: var(--accent-gold);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.selection-item {
+  background: rgba(30,30,30,0.8);
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.selection-item:hover {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 20px var(--border-glow);
+  transform: scale(1.05);
+}
+
+.selection-item.selected {
+  border-color: var(--accent-gold);
+  background: rgba(212,175,55,0.2);
+  box-shadow: 0 0 25px var(--border-glow), inset 0 0 15px rgba(212,175,55,0.1);
+}
+
+.selection-item.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: var(--accent-gold);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.selection-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.selection-label {
+  font-size: 12px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#acc-motive {
+  width: 100%;
+  padding: 15px;
+  background: rgba(30,30,30,0.9);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-family: 'Crimson Text', serif;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+#acc-motive:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 15px var(--border-glow);
+}
+
+#acc-motive::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 15px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 2px solid var(--accent-gold);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-btn-primary {
+  background: linear-gradient(180deg, rgba(139,0,0,0.8) 0%, rgba(70,0,0,0.8) 100%);
+  color: var(--text-light);
+}
+
+.modal-btn-primary:hover {
+  background: linear-gradient(180deg, rgba(139,0,0,1) 0%, rgba(70,0,0,1) 100%);
+  box-shadow: 0 0 20px rgba(139,0,0,0.6);
+  transform: translateY(-2px);
+}
+
+.modal-btn-secondary {
+  background: rgba(40,40,40,0.8);
+  color: var(--text-light);
+}
+
+.modal-btn-secondary:hover {
+  background: rgba(60,60,60,0.9);
+  box-shadow: 0 0 15px var(--border-glow);
+  transform: translateY(-2px);
+}
+
+/* ========== CLUE POPUP ========== */
+.clue-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(10,10,10,0.98) 100%);
+  border: 3px solid var(--accent-gold);
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 500px;
+  z-index: 150;
+  box-shadow: 0 0 50px rgba(212,175,55,0.6), 0 0 100px rgba(0,0,0,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.clue-popup.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: all;
+}
+
+.clue-popup-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.clue-popup-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+  animation: clueFloat 2s ease infinite;
+}
+
+@keyframes clueFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.clue-popup-title {
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+.clue-popup-description {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(30,30,30,0.8);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 5px;
+}
+
+.clue-popup-btn {
+  width: 100%;
+  padding: 15px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, rgba(139,0,0,0.8) 0%, rgba(70,0,0,0.8) 100%);
+  color: var(--text-light);
+  border: 2px solid var(--accent-gold);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clue-popup-btn:hover {
+  background: linear-gradient(180deg, rgba(139,0,0,1) 0%, rgba(70,0,0,1) 100%);
+  box-shadow: 0 0 20px rgba(212,175,55,0.6);
+  transform: translateY(-2px);
+}
+#interrogation-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 550px;
+  max-width: 90%;
+  background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(10,10,10,0.98) 100%);
+  border: 3px solid var(--accent-gold);
+  border-radius: 15px;
+  padding: 30px;
+  z-index: 100;
+  box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 100px var(--border-glow);
+  animation: modalSlideIn 0.5s ease;
+}
+
+.interrogation-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.interrogation-portrait {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-gold);
+  margin: 0 auto 15px;
+  box-shadow: 0 0 20px var(--border-glow);
+}
+
+.interrogation-name {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  color: var(--accent-gold);
+  margin-bottom: 5px;
+}
+
+.interrogation-role {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.question-btn {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: rgba(30,30,30,0.8);
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-family: 'Crimson Text', serif;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.question-btn:hover {
+  background: rgba(40,40,40,0.9);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 15px var(--border-glow);
+  transform: translateX(5px);
+}
+
+.response-box {
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(10,10,10,0.9);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 6px;
+  min-height: 60px;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+/* ========== INTRO SCREEN ========== */
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.intro-content {
+  max-width: 800px;
+  text-align: center;
+  animation: fadeInUp 1s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.intro-title {
+  font-family: 'Cinzel', serif;
+  font-size: 56px;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 30px var(--accent-gold), 2px 2px 10px rgba(0,0,0,0.8);
+  animation: pulse 3s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 30px var(--accent-gold); }
+  50% { opacity: 0.8; text-shadow: 0 0 50px var(--accent-gold); }
+}
+
+.intro-subtitle {
+  font-size: 20px;
+  color: var(--accent-blood);
+  font-style: italic;
+  letter-spacing: 2px;
+  margin-bottom: 40px;
+  text-shadow: 0 0 10px rgba(139,0,0,0.8);
+}
+
+.intro-story {
+  background: rgba(20,20,20,0.8);
+  border: 2px solid var(--accent-gold);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 40px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.intro-story h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.intro-story p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.victim-box {
+  background: rgba(139,0,0,0.2);
+  border-left: 4px solid var(--accent-blood);
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 5px;
+}
+
+.victim-box strong {
+  color: var(--accent-gold);
+  font-size: 18px;
+}
+
+.intro-instructions {
+  background: rgba(30,30,30,0.8);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.intro-instructions h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--accent-gold);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.intro-instructions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.intro-instructions li {
+  padding: 8px 0;
+  padding-left: 25px;
+  position: relative;
+  font-size: 15px;
+  color: var(--text-dim);
+}
+
+.intro-instructions li::before {
+  content: '►';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+}
+
+.start-button {
+  padding: 20px 60px;
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  background: linear-gradient(180deg, rgba(139,0,0,0.9) 0%, rgba(70,0,0,0.9) 100%);
+  color: var(--text-light);
+  border: 3px solid var(--accent-gold);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 30px rgba(139,0,0,0.5), 0 4px 15px rgba(0,0,0,0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.start-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(212,175,55,0.3), transparent);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+  border-radius: 50%;
+}
+
+.start-button:hover::before {
+  width: 400px;
+  height: 400px;
+}
+
+.start-button:hover {
+  background: linear-gradient(180deg, rgba(139,0,0,1) 0%, rgba(70,0,0,1) 100%);
+  box-shadow: 0 0 50px rgba(212,175,55,0.8), 0 8px 25px rgba(0,0,0,0.9);
+  transform: translateY(-5px);
+}
+
+.intro-warning {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 280px;
+  }
+  
+  .room-header h2 {
+    font-size: 20px;
+  }
+  
+  #room-items {
+    bottom: 200px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="intro-screen">
+  <div class="intro-content">
+    <div class="intro-title">Vale Mansion</div>
+    <div class="intro-subtitle">A Murder Most Foul</div>
+    
+    <div class="intro-story">
+      <h2>The Case</h2>
+      <p>
+        On a cold October evening in 1924, the Vale Mansion was shaken by a terrible crime. 
+        The renowned industrialist <strong>REGINALD VALE</strong> was found dead in his study, 
+        slumped over his mahogany desk with a look of terror frozen on his face.
+      </p>
+      <div class="victim-box">
+        <strong>VICTIM:</strong> Reginald Vale, aged 58<br>
+        <strong>TIME OF DEATH:</strong> Between 8:00 PM and 10:00 PM<br>
+        <strong>LOCATION:</strong> The Study, Vale Mansion
+      </div>
+      <p>
+        The mansion was hosting a small gathering that evening. Six individuals were present,
+        each with their own connection to the deceased. The local authorities are baffled,
+        and dark secrets lurk in every shadow of this gothic estate.
+      </p>
+      <p>
+        You are <strong>Detective X</strong>, renowned for solving the most perplexing cases.
+        You've been summoned to unravel this mystery. The killer is still in the mansion,
+        hiding among the suspects. Can you expose them before they strike again?
+      </p>
+    </div>
+    
+    <div class="intro-instructions">
+      <h3>How to Play</h3>
+      <ul>
+        <li>Explore six rooms of the mansion by clicking the room buttons</li>
+        <li>Inspect items in each room to discover clues and evidence</li>
+        <li>Solve puzzles to unlock critical information</li>
+        <li>Interrogate all six suspects to learn their stories and alibis</li>
+        <li>Collect evidence in your inventory to build your case</li>
+        <li>When ready, make your accusation: identify the killer, weapon, and motive</li>
+        <li>You have only 3 attempts - choose wisely!</li>
+      </ul>
+    </div>
+    
+    <button class="start-button" onclick="startGame()">BEGIN INVESTIGATION</button>
+    
+    <div class="intro-warning">
+      ⚠️ Warning: The killer is cunning. Pay close attention to details and contradictions.
+    </div>
+  </div>
+</div>
+
+<div id="game-container" style="display:none;">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="mansion-header">
+      <h1>Vale Mansion</h1>
+      <div class="subtitle">Murder Mystery Case #1847</div>
+    </div>
+    
+    <!-- Inventory Section -->
+    <div class="sidebar-section">
+      <h3>📋 Evidence <span class="evidence-count">(0)</span></h3>
+      <div id="inventory-list"></div>
+    </div>
+    
+    <!-- Suspects Section -->
+    <div class="sidebar-section">
+      <h3>🔍 Suspects</h3>
+      <div id="suspects-list" class="suspects-grid"></div>
+    </div>
+    
+    <!-- Navigation Section -->
+    <div class="sidebar-section">
+      <h3>🚪 Rooms</h3>
+      <div class="room-buttons">
+        <button class="room-btn" onclick="moveRoom('study')">Study</button>
+        <button class="room-btn" onclick="moveRoom('kitchen')">Kitchen</button>
+        <button class="room-btn" onclick="moveRoom('conservatory')">Conservatory</button>
+        <button class="room-btn" onclick="moveRoom('office')">Office</button>
+        <button class="room-btn" onclick="moveRoom('guest')">Guest Room</button>
+        <button class="room-btn" onclick="moveRoom('library')">Library</button>
+      </div>
+    </div>
+    
+    <!-- Actions Section -->
+    <div class="sidebar-section">
+      <h3>⚡ Actions</h3>
+      <button class="action-btn" onclick="showSuspectsInRoom()">🗣️ Interrogate</button>
+      <button class="action-btn" onclick="openAccusationModal()">⚖️ Make Accusation</button>
+    </div>
+  </div>
+  
+  <!-- MAIN PANEL -->
+  <div id="main-panel">
+    <div class="room-header">
+      <h2 id="room-title">Study</h2>
+    </div>
+    
+    <div id="room-items"></div>
+    
+    <div id="dialogue-box"></div>
+    
+    <div id="commentary"></div>
+  </div>
+</div>
+
+<!-- CLUE POPUP -->
+<div id="clue-popup" class="clue-popup">
+  <div class="clue-popup-header">
+    <div class="clue-popup-icon" id="clue-popup-icon">🔍</div>
+    <div class="clue-popup-title">Evidence Found!</div>
+  </div>
+  <div class="clue-popup-description" id="clue-popup-description"></div>
+  <button class="clue-popup-btn" onclick="closeCluePopup()">Add to Evidence</button>
+</div>
+
+<!-- ACCUSATION MODAL -->
+<div id="accusation-modal">
+  <h2>Make Your Accusation</h2>
+  
+  <div class="modal-section">
+    <h3>Select Suspect</h3>
+    <div id="acc-suspects" class="selection-grid"></div>
+  </div>
+  
+  <div class="modal-section">
+    <h3>Select Weapon</h3>
+    <div id="acc-weapons" class="selection-grid"></div>
+  </div>
+  
+  <div class="modal-section">
+    <h3>Select Motive</h3>
+    <div id="acc-motives" class="selection-grid"></div>
+  </div>
+  
+  <div class="modal-buttons">
+    <button class="modal-btn modal-btn-primary" onclick="submitAccusation()">Submit Accusation</button>
+    <button class="modal-btn modal-btn-secondary" onclick="closeAccusationModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- INTERROGATION MODAL -->
+<div id="interrogation-modal">
+  <div class="interrogation-header">
+    <img id="interrog-portrait" class="interrogation-portrait" src="" alt="Suspect">
+    <div class="interrogation-name" id="interrog-name"></div>
+    <div class="interrogation-role" id="interrog-role"></div>
+  </div>
+  
+  <div id="question-list"></div>
+  
+  <div class="response-box" id="response-box">Ask a question to begin...</div>
+  
+  <div class="modal-buttons">
+    <button class="modal-btn modal-btn-secondary" onclick="closeInterrogationModal()">End Interrogation</button>
+  </div>
+</div>
+
+<script>
+// ======================= DATA =========================
+const WITTY_STATEMENTS = [
+  "'I should have been a cat; nine lives would help with this job.'",
+  "'Nothing like paperwork and murder to start the day.'",
+  "'If I stare at this chair long enough, maybe it will confess.'",
+  "'Another clue? Or just a dust bunny pretending to be one?'",
+  "'I didn't choose the detective life; the detective life chose me.'",
+  "'Yes, I'm talking to a plant. No, it hasn't admitted anything yet.'",
+  "'I hope the killer left a Yelp review of their plan. It might help.'",
+  "'Coffee. I need coffee. And answers. But mostly coffee.'",
+  "'Note to self: mansions with dark secrets never have good lighting.'",
+  "'If this case doesn't kill me, the suspense certainly will.'",
+  "'I've seen cleaner crime scenes at a butcher shop.'",
+  "'Why do rich people always have so many rooms? Exhausting.'",
+  "'The butler did it. Or was it the— wait, there's no butler.'",
+  "'Murder weapons: check. Motives: check. Sanity: pending.'",
+  "'I wonder if the killer knows they left breadcrumbs everywhere.'",
+  "'Ah yes, another cryptic clue. Just what I needed. More riddles.'",
+  "'This mansion has more secrets than a politician's diary.'",
+  "'If only dead men could talk. Would save me a lot of trouble.'",
+  "'Six suspects, one killer. Better odds than my last poker game.'",
+  "'I should write a book: How to Distrust Everyone in Ten Easy Steps.'",
+  "'The walls have ears. And apparently, they've seen some things.'",
+  "'Another day, another wealthy victim. Tale as old as time.'",
+  "'These suspects lie more than a broken clock tells time.'",
+  "'My instincts say something's off. Or maybe I'm just hungry.'",
+  "'This case is more twisted than a pretzel at a yoga class.'"
+];
+
+const SUSPECTS = {
+  trevor: {name: "TREVOR VALE", role: "Brother", room: "kitchen", portrait: "👨‍💼", 
+    background: "Reginald's younger brother. Always lived in his shadow. Recently discovered he was written out of the will."},
+  emma: {name: "EMMA HARROW", role: "Personal Assistant", room: "conservatory", portrait: "👩‍💼",
+    background: "Worked for Reginald for 5 years. Knows all his secrets. Was seen arguing with him the day before."},
+  lyle: {name: "DR. ARTHUR LYLE", role: "Family Physician", room: "guest", portrait: "👨‍⚕️",
+    background: "Treated Reginald for years. Had access to various medications. Owed Reginald a significant debt."},
+  marcus: {name: "MARCUS FINCH", role: "Business Courier", room: "office", portrait: "👨‍✈️",
+    background: "Delivered important documents to Reginald weekly. Was transporting something valuable that night."},
+  vanessa: {name: "VANESSA CROSS", role: "Neighbor", room: "library", portrait: "👩‍🦰",
+    background: "Lives in the adjacent estate. Had a complicated history with Reginald. Property dispute ongoing."},
+  gerald: {name: "GERALD STONE", role: "Estate Lawyer", room: "study", portrait: "👨‍⚖️",
+    background: "Handled Reginald's legal affairs for decades. Recently made significant changes to the will."}
+};
+
+const WEAPONS = [
+  {name: "knife", icon: "🔪"},
+  {name: "poison", icon: "☠️"},
+  {name: "briefcase", icon: "💼"},
+  {name: "rope", icon: "🪢"},
+  {name: "candlestick", icon: "🕯️"}
+];
+
+const MOTIVES = [
+  {name: "money", icon: "💰", label: "Money"},
+  {name: "revenge", icon: "⚔️", label: "Revenge"},
+  {name: "jealousy", icon: "💔", label: "Jealousy"},
+  {name: "coverup", icon: "🤫", label: "Cover-up"},
+  {name: "love_triangle", icon: "💕", label: "Love Triangle"}
+];
+
+const ROOMS = {
+  study: {
+    items: [
+      {name: "Desk", desc: "Oak desk with scattered papers and ink stains", icon: "🗄️", clueId: "desk_note", clueText: "Letter mentions heated argument about inheritance"},
+      {name: "Bookshelf", desc: "Rows of dusty law books and first editions", icon: "📚", clueId: "bookshelf_note", clueText: "Hidden compartment behind books - empty"},
+      {name: "Leather Chair", desc: "Chair with suspicious dark stains on armrest", icon: "🪑", clueId: "chair_stain", clueText: "Red stains match victim's blood type"},
+      {name: "Window", desc: "Slightly ajar with view of garden", icon: "🪟"},
+      {name: "Portrait", desc: "Oil painting of Reginald Vale", icon: "🖼️"},
+      {name: "Cigar Box", desc: "Ornate box containing Cuban cigars", icon: "📦", clueId: "cigar_box", clueText: "Two cigars missing, ash in victim's hand"},
+      {name: "Telephone", desc: "Vintage rotary phone on desk", icon: "☎️", clueId: "phone_log", clueText: "Last call made at 8:45 PM to Dr. Lyle"},
+      {name: "Rug", desc: "Persian rug with corner folded", icon: "🟫"}
+    ]
+  },
+  kitchen: {
+    items: [
+      {name: "Knife Block", desc: "One large knife missing from set", icon: "🔪", clueId: "missing_knife", clueText: "Knife matches wound pattern on victim", puzzle: true, solution: "KNIFE"},
+      {name: "Oven", desc: "Still warm with remnants of roast dinner", icon: "🍳"},
+      {name: "Tea Cup", desc: "Porcelain cup with suspicious residue", icon: "☕", clueId: "tea_cup", clueText: "Chemical analysis reveals sedative traces"},
+      {name: "Fridge", desc: "Magnets hold mysterious notes and recipes", icon: "🧊", clueId: "fridge_note", clueText: "Note about 'Apple of my eye' - coded message?", puzzle: true, solution: "APPLE"},
+      {name: "Wine Rack", desc: "Several expensive bottles, one opened", icon: "🍷"},
+      {name: "Cutting Board", desc: "Fresh vegetable cuttings and blood?", icon: "🔲", clueId: "cutting_board", clueText: "Blood droplets - not from vegetables"},
+      {name: "Pantry Door", desc: "Slightly ajar, darkness within", icon: "🚪"},
+      {name: "Sink", desc: "Wet with recently washed dishes", icon: "🚰", clueId: "sink_clue", clueText: "Blood traces in drain"}
+    ]
+  },
+  conservatory: {
+    items: [
+      {name: "Orchids", desc: "Exotic purple and white orchids", icon: "🌺", clueId: "orchid_poison", clueText: "Some orchids here are poisonous if ingested"},
+      {name: "Dual Teacups", desc: "Two cups, one still warm", icon: "🫖", clueId: "dual_teacups", clueText: "Two people had tea here around time of death"},
+      {name: "Journal", desc: "Leather diary with emotional entries", icon: "📔", clueId: "journal", clueText: "Journal reveals unrequited love and jealousy", puzzle: true, solution: "LOVE"},
+      {name: "Letter", desc: "Crumpled letter about financial troubles", icon: "✉️"},
+      {name: "Greenhouse Glass", desc: "Broken pane near the door", icon: "🪟", clueId: "broken_glass", clueText: "Glass broken from outside, someone forced entry"},
+      {name: "Watering Can", desc: "Silver watering can, unused", icon: "🚿"},
+      {name: "Garden Shears", desc: "Sharp pruning shears on bench", icon: "✂️", clueId: "garden_shears", clueText: "Fresh fabric caught in blades - expensive silk"},
+      {name: "Fountain", desc: "Small decorative fountain", icon: "⛲"}
+    ]
+  },
+  office: {
+    items: [
+      {name: "Ledgers", desc: "Financial records dating back decades", icon: "📊", clueId: "ledger", clueText: "Ledger shows embezzlement and blackmail payments"},
+      {name: "Office Desk", desc: "Worn mahogany desk cluttered with papers", icon: "🗂️"},
+      {name: "Safe", desc: "Heavy iron safe with combination lock", icon: "🔐", clueId: "safe_puzzle", clueText: "Safe contains incriminating photographs", puzzle: true, solution: "0420"},
+      {name: "Documents", desc: "Torn and burned contracts", icon: "📄", clueId: "documents", clueText: "Evidence of illegal business dealings"},
+      {name: "Filing Cabinet", desc: "Metal cabinet with multiple drawers", icon: "🗄️", clueId: "filing_cabinet", clueText: "Files on each suspect - all blackmail material"},
+      {name: "Typewriter", desc: "Vintage typewriter with paper loaded", icon: "⌨️"},
+      {name: "Briefcase", desc: "Leather briefcase left open", icon: "💼", clueId: "briefcase_clue", clueText: "Briefcase contains £10,000 in cash - payment?"},
+      {name: "Clock", desc: "Grandfather clock stopped at 9:17", icon: "🕰️", clueId: "stopped_clock", clueText: "Clock stopped during struggle - precise time of death"}
+    ]
+  },
+  guest: {
+    items: [
+      {name: "Medical Bag", desc: "Leather bag with various vials and tools", icon: "💊", clueId: "medical_bag", clueText: "Bag contains lethal doses of morphine"},
+      {name: "Guest Bed", desc: "Neatly made bed with silk sheets", icon: "🛏️"},
+      {name: "Ampoule", desc: "Broken glass vial on nightstand", icon: "🧪", clueId: "missing_ampoule", clueText: "Ampoule contained deadly poison - now empty"},
+      {name: "Courier Envelope", desc: "Sealed envelope with red wax", icon: "📮", clueId: "envelope", clueText: "Envelope addressed to victim, never delivered"},
+      {name: "Wardrobe", desc: "Antique wooden wardrobe", icon: "👔", clueId: "wardrobe_clue", clueText: "Hidden coat with blood spatter on sleeve"},
+      {name: "Mirror", desc: "Full-length ornate mirror", icon: "🪞"},
+      {name: "Luggage", desc: "Expensive leather suitcase", icon: "🧳", clueId: "luggage_clue", clueText: "Packed for sudden departure - flight ticket inside"},
+      {name: "Washbasin", desc: "Porcelain basin with soap", icon: "🚰"}
+    ]
+  },
+  library: {
+    items: [
+      {name: "Fireplace", desc: "Recently used, ashes still warm", icon: "🔥", clueId: "fireplace", clueText: "Burnt paper fragments spell out 'confession'"},
+      {name: "Reading Chair", desc: "Velvet armchair facing fireplace", icon: "🛋️"},
+      {name: "Ladder", desc: "Rolling library ladder", icon: "🪜", clueId: "ladder", clueText: "Fresh scuff marks on floor - someone moved quickly"},
+      {name: "Manuscript", desc: "Unfinished will on writing desk", icon: "📜", clueId: "manuscript", clueText: "Will dated today - never signed"},
+      {name: "Legal Books", desc: "Shelf of legal reference books", icon: "⚖️", clueId: "legal_books", clueText: "Book on poisoning open to specific page"},
+      {name: "Writing Desk", desc: "Desk with ink and quill", icon: "🖋️"},
+      {name: "Candelabra", desc: "Silver candelabra with dripping wax", icon: "🕯️", clueId: "candelabra_clue", clueText: "One candlestick missing from the set"},
+      {name: "Globe", desc: "Antique world globe on stand", icon: "🌍"}
+    ]
+  }
+};
+
+const ROOM_BACKGROUNDS = {
+  study: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23221a15'/%3E%3Cstop offset='100%25' style='stop-color:%230a0a0a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3C/svg%3E",
+  kitchen: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231a1511'/%3E%3Cstop offset='100%25' style='stop-color:%230a0a0a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3C/svg%3E",
+  conservatory: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23152218'/%3E%3Cstop offset='100%25' style='stop-color:%230a0a0a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3C/svg%3E",
+  office: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23191511'/%3E%3Cstop offset='100%25' style='stop-color:%230a0a0a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3C/svg%3E",
+  guest: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23221518'/%3E%3Cstop offset='100%25' style='stop-color:%230a0a0a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3C/svg%3E",
+  library: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23151a22'/%3E%3Cstop offset='100%25' style='stop-color:%230a0a0a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3C/svg%3E"
+};
+
+// ======================= GAME STATE =========================
+let currentRoom = "study";
+let clueInventory = {};
+let guessAttempts = 0;
+let killer = Object.keys(SUSPECTS)[Math.floor(Math.random() * 6)];
+let weapon = WEAPONS[Math.floor(Math.random() * WEAPONS.length)].name;
+let motive = MOTIVES[Math.floor(Math.random() * MOTIVES.length)].name;
+let currentInterrogationSuspect = null;
+let roomCluesDistribution = {};
+
+// ======================= RANDOMIZE CLUES =========================
+function randomizeClues() {
+  // Reset all items to have no clues
+  for (let roomName in ROOMS) {
+    ROOMS[roomName].items.forEach(item => {
+      item.hasClue = false;
+    });
+  }
+  
+  // Determine how many clues per room (2-4 clues per room)
+  for (let roomName in ROOMS) {
+    const numClues = Math.floor(Math.random() * 3) + 2; // 2-4 clues
+    const itemsWithClues = ROOMS[roomName].items.filter(item => item.clueId);
+    
+    // Shuffle and select random items to have clues
+    const shuffled = itemsWithClues.sort(() => Math.random() - 0.5);
+    for (let i = 0; i < Math.min(numClues, shuffled.length); i++) {
+      shuffled[i].hasClue = true;
+    }
+    
+    roomCluesDistribution[roomName] = numClues;
+  }
+}
+
+// ======================= FUNCTIONS =========================
+function wittyComment() {
+  if (Math.random() < 0.3) {
+    const text = WITTY_STATEMENTS[Math.floor(Math.random() * WITTY_STATEMENTS.length)];
+    const el = document.getElementById("commentary");
+    el.innerText = text;
+    el.classList.add("show");
+    setTimeout(() => {
+      el.classList.remove("show");
+    }, 3500);
+  }
+}
+
+function addDialogue(text, isClue = false) {
+  const box = document.getElementById("dialogue-box");
+  const line = document.createElement("div");
+  line.className = "dialogue-line";
+  if (isClue) {
+    line.innerHTML = `<span class="clue-found">${text}</span>`;
+  } else {
+    line.innerText = text;
+  }
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+function sparkleEffect(x, y) {
+  const sparkle = document.createElement("div");
+  sparkle.className = "sparkle";
+  sparkle.style.left = x + "px";
+  sparkle.style.top = y + "px";
+  document.getElementById("main-panel").appendChild(sparkle);
+  setTimeout(() => sparkle.remove(), 1000);
+}
+
+function showRoom() {
+  const panel = document.getElementById("main-panel");
+  panel.style.backgroundImage = `url('${ROOM_BACKGROUNDS[currentRoom]}')`;
+  
+  document.getElementById("room-title").innerText = currentRoom.charAt(0).toUpperCase() + currentRoom.slice(1);
+  
+  const container = document.getElementById("room-items");
+  container.innerHTML = "";
+  
+  ROOMS[currentRoom].items.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "item-card";
+    card.style.animationDelay = (index * 0.1) + "s";
+    
+    const icon = document.createElement("div");
+    icon.className = "item-icon";
+    icon.innerText = item.icon;
+    
+    const label = document.createElement("div");
+    label.className = "item-label";
+    label.innerText = item.name;
+    
+    card.appendChild(icon);
+    card.appendChild(label);
+    card.onclick = (e) => inspectItem(item, e);
+    
+    container.appendChild(card);
+  });
+  
+  wittyComment();
+  updateSidebar();
+}
+
+function moveRoom(room) {
+  currentRoom = room;
+  addDialogue(`You move to the ${room.charAt(0).toUpperCase() + room.slice(1)}.`);
+  showRoom();
+}
+
+function inspectItem(item, event) {
+  addDialogue(`You inspect ${item.name}: ${item.desc}`);
+  
+  if (item.clueId && item.hasClue && !clueInventory[item.clueId]) {
+    if (item.puzzle) {
+      setTimeout(() => {
+        let ans = prompt(`🧩 Puzzle! Enter solution for ${item.name}:`);
+        if (ans && ans.toUpperCase() === item.solution) {
+          // Store with room info
+          clueInventory[item.clueId] = {
+            text: item.clueText,
+            room: currentRoom,
+            itemName: item.name,
+            icon: item.icon
+          };
+          addDialogue(`✓ Puzzle solved!`, true);
+          showCluePopup(item);
+          updateSidebar();
+        } else if (ans) {
+          addDialogue("✗ Incorrect solution. Keep looking for hints.");
+        }
+      }, 100);
+    } else {
+      // Store with room info
+      clueInventory[item.clueId] = {
+        text: item.clueText,
+        room: currentRoom,
+        itemName: item.name,
+        icon: item.icon
+      };
+      showCluePopup(item);
+      updateSidebar();
+    }
+  } else if (item.clueId && !item.hasClue) {
+    addDialogue("Nothing of interest here.");
+  } else if (item.clueId && clueInventory[item.clueId]) {
+    addDialogue("You already found this clue.");
+  } else {
+    addDialogue("Nothing of interest here.");
+  }
+}
+
+function showCluePopup(item) {
+  const popup = document.getElementById("clue-popup");
+  document.getElementById("clue-popup-icon").innerText = item.icon;
+  document.getElementById("clue-popup-description").innerText = item.clueText;
+  popup.classList.add("show");
+}
+
+function closeCluePopup() {
+  const popup = document.getElementById("clue-popup");
+  popup.classList.remove("show");
+  addDialogue(`✦ Evidence added to inventory!`, true);
+}
+
+function updateSidebar() {
+  // Update Inventory with grouped clues by room
+  const invList = document.getElementById("inventory-list");
+  invList.innerHTML = "";
+  
+  const clueCount = Object.keys(clueInventory).length;
+  document.querySelector(".evidence-count").innerText = `(${clueCount})`;
+  
+  if (clueCount === 0) {
+    invList.innerHTML = "<p style='text-align:center;color:var(--text-dim);font-size:13px;margin-top:10px;'>No evidence collected yet...</p>";
+  } else {
+    // Group clues by room
+    const cluesByRoom = {};
+    for (let clueId in clueInventory) {
+      const clue = clueInventory[clueId];
+      const roomName = clue.room;
+      if (!cluesByRoom[roomName]) {
+        cluesByRoom[roomName] = [];
+      }
+      cluesByRoom[roomName].push(clue);
+    }
+    
+    // Create collapsible sections for each room
+    for (let roomName in cluesByRoom) {
+      const roomSection = document.createElement("div");
+      roomSection.className = "room-evidence-section";
+      
+      const roomHeader = document.createElement("div");
+      roomHeader.className = "room-evidence-header";
+      roomHeader.innerHTML = `
+        <span>${roomName.charAt(0).toUpperCase() + roomName.slice(1)} (${cluesByRoom[roomName].length})</span>
+        <span class="toggle-icon">▼</span>
+      `;
+      
+      const roomContent = document.createElement("div");
+      roomContent.className = "room-evidence-content";
+      
+      cluesByRoom[roomName].forEach(clue => {
+        const clueDiv = document.createElement("div");
+        clueDiv.className = "clue-item";
+        
+        const icon = document.createElement("div");
+        icon.className = "clue-icon";
+        icon.innerText = clue.icon;
+        
+        const text = document.createElement("div");
+        text.className = "clue-text";
+        text.innerText = clue.text;
+        
+        clueDiv.appendChild(icon);
+        clueDiv.appendChild(text);
+        roomContent.appendChild(clueDiv);
+      });
+      
+      roomHeader.onclick = () => {
+        roomHeader.classList.toggle("collapsed");
+        roomContent.classList.toggle("collapsed");
+      };
+      
+      roomSection.appendChild(roomHeader);
+      roomSection.appendChild(roomContent);
+      invList.appendChild(roomSection);
+    }
+  }
+  
+  // Update Suspects (unchanged)
+  const susList = document.getElementById("suspects-list");
+  susList.innerHTML = "";
+  
+  for (let s in SUSPECTS) {
+    const card = document.createElement("div");
+    card.className = "suspect-card";
+    card.onclick = () => startInterrogation(s);
+    
+    const portrait = document.createElement("div");
+    portrait.className = "suspect-portrait";
+    portrait.style.display = "flex";
+    portrait.style.alignItems = "center";
+    portrait.style.justifyContent = "center";
+    portrait.style.fontSize = "40px";
+    portrait.innerText = SUSPECTS[s].portrait;
+    
+    const name = document.createElement("div");
+    name.className = "suspect-name";
+    name.innerText = SUSPECTS[s].name;
+    
+    const role = document.createElement("div");
+    role.className = "suspect-role";
+    role.innerText = SUSPECTS[s].role;
+    
+    card.appendChild(portrait);
+    card.appendChild(name);
+    card.appendChild(role);
+    susList.appendChild(card);
+  }
+}
+
+// ======================= INTERROGATION =========================
+function showSuspectsInRoom() {
+  const suspectsHere = Object.keys(SUSPECTS).filter(s => SUSPECTS[s].room === currentRoom);
+  
+  if (suspectsHere.length === 0) {
+    addDialogue("No suspects are present in this room.");
+    return;
+  }
+  
+  addDialogue("Suspects in this room:");
+  suspectsHere.forEach(s => {
+    addDialogue(`• ${SUSPECTS[s].name} (${SUSPECTS[s].role})`);
+  });
+  
+  if (suspectsHere.length === 1) {
+    startInterrogation(suspectsHere[0]);
+  } else {
+    addDialogue("Click on a suspect in the sidebar to interrogate them.");
+  }
+}
+
+function startInterrogation(suspect) {
+  if (SUSPECTS[suspect].room !== currentRoom) {
+    addDialogue(`${SUSPECTS[suspect].name} is not in this room. They are in the ${SUSPECTS[suspect].room}.`);
+    return;
+  }
+  
+  currentInterrogationSuspect = suspect;
+  const modal = document.getElementById("interrogation-modal");
+  
+  document.getElementById("interrog-portrait").innerText = SUSPECTS[suspect].portrait;
+  document.getElementById("interrog-portrait").style.display = "flex";
+  document.getElementById("interrog-portrait").style.alignItems = "center";
+  document.getElementById("interrog-portrait").style.justifyContent = "center";
+  document.getElementById("interrog-portrait").style.fontSize = "60px";
+  document.getElementById("interrog-name").innerText = SUSPECTS[suspect].name;
+  document.getElementById("interrog-role").innerText = SUSPECTS[suspect].role;
+  
+  const questionList = document.getElementById("question-list");
+  questionList.innerHTML = "";
+  
+  const questions = [
+    "What were you doing on the day of the murder?",
+    "Did you notice anyone acting suspicious?",
+    "How did you feel about the victim?",
+    "Do you know anything about the weapon used?",
+    "Did you have any reason to harm the victim?",
+    "Can you provide your alibi?"
+  ];
+  
+  questions.forEach((q, i) => {
+    const btn = document.createElement("button");
+    btn.className = "question-btn";
+    btn.innerText = q;
+    btn.onclick = () => askQuestion(suspect, i, q);
+    questionList.appendChild(btn);
+  });
+  
+  document.getElementById("response-box").innerText = "Ask a question to begin...";
+  modal.style.display = "block";
+}
+
+function askQuestion(suspect, qIndex, question) {
+  const responseBox = document.getElementById("response-box");
+  const suspectData = SUSPECTS[suspect];
+  
+  let answer;
+  const isKiller = suspect === killer;
+  
+  // Customized responses based on suspect and question
+  if (qIndex === 0) { // What were you doing?
+    if (isKiller) {
+      const evasiveAnswers = [
+        "I was... around. Here and there. You know how it is at these gatherings.",
+        "I stepped out for some air. Can't recall exactly when or where.",
+        "I was moving between rooms. It's all rather fuzzy now.",
+        "Does it matter? I didn't see anything suspicious."
+      ];
+      answer = evasiveAnswers[Math.floor(Math.random() * evasiveAnswers.length)];
+      answer += " [NERVOUS - Their story seems vague and inconsistent]";
+    } else {
+      answer = `I was in the ${suspectData.room} most of the evening. ${['Others can confirm this.', 'Several people saw me there.', 'I never left that area.'][Math.floor(Math.random() * 3)]}`;
+    }
+  } else if (qIndex === 1) { // Acting suspicious?
+    if (suspect === "trevor") {
+      answer = "Everyone was acting strange. Family gatherings do that. Reginald had a talent for making people uncomfortable.";
+    } else if (suspect === "emma") {
+      answer = "Mr. Vale was agitated all evening. He kept checking his watch and seemed distracted.";
+    } else if (suspect === "lyle") {
+      answer = "As a physician, I notice details. Several people seemed on edge. The atmosphere was... tense.";
+    } else if (suspect === "marcus") {
+      answer = "I'm just the courier. I deliver packages, not judgments. But yes, there was tension in the air.";
+    } else if (suspect === "vanessa") {
+      answer = "Reginald was paranoid lately. Kept talking about enemies and betrayal.";
+    } else {
+      answer = "In my experience, everyone has something to hide. It's just a matter of what.";
+    }
+  } else if (qIndex === 2) { // How did you feel about victim?
+    if (suspect === "trevor") {
+      answer = isKiller ? 
+        "My brother? We had our... differences. Families are complicated." :
+        "He was my brother. We weren't close, but I never wished him harm.";
+    } else if (suspect === "emma") {
+      answer = isKiller ?
+        "Mr. Vale was demanding. He expected perfection. It was... exhausting." :
+        "He was a difficult employer, but I respected his work ethic.";
+    } else if (suspect === "lyle") {
+      answer = isKiller ?
+        "Reginald was a patient. A complicated one. Our relationship was strictly professional." :
+        "I treated him for years. We had mutual respect.";
+    } else if (suspect === "marcus") {
+      answer = isKiller ?
+        "He was just a client. Though he did ask me to do some... questionable deliveries." :
+        "Professional relationship only. I delivered, he paid.";
+    } else if (suspect === "vanessa") {
+      answer = isKiller ?
+        "Reginald and I had history. Ancient history. It's... complicated." :
+        "We were neighbors for years. Cordial, nothing more.";
+    } else {
+      answer = isKiller ?
+        "I handled his legal affairs. Sometimes that meant knowing too much." :
+        "He was my client for decades. I knew him well, perhaps too well.";
+    }
+    if (isKiller) answer += " [DEFENSIVE - They're hiding something]";
+  } else if (qIndex === 3) { // About the weapon?
+    if (weapon === "knife" && suspect === "trevor") {
+      answer = "A knife? From the kitchen perhaps? I was there earlier preparing food.";
+    } else if (weapon === "poison" && suspect === "lyle") {
+      answer = "Poison? A physician would know about such things, wouldn't they? [nervous laugh]";
+    } else if (weapon === "briefcase" && suspect === "marcus") {
+      answer = "My briefcase? It's just for deliveries. Nothing sinister about it.";
+    } else {
+      const genericAnswers = [
+        "I haven't heard anything specific about the weapon.",
+        "The police haven't shared those details with me.",
+        "That's a disturbing thought. I'd rather not speculate.",
+        "I try not to think about such gruesome details."
+      ];
+      answer = genericAnswers[Math.floor(Math.random() * genericAnswers.length)];
+    }
+  } else if (qIndex === 4) { // Reason to harm?
+    if (isKiller) {
+      if (motive === "money") {
+        answer = "Money? I... I had no idea about his wealth. [LYING - They avoid eye contact]";
+      } else if (motive === "revenge") {
+        answer = "Revenge? That's absurd. The past is the past. [ANGRY - Their jaw clenches]";
+      } else if (motive === "jealousy") {
+        answer = "Jealous? Of Reginald? Don't be ridiculous. [BITTER - Their tone betrays resentment]";
+      } else if (motive === "coverup") {
+        answer = "I don't know what you're implying. [PANICKED - They shift uncomfortably]";
+      } else {
+        answer = "That's personal. And irrelevant. [EVASIVE - They change the subject quickly]";
+      }
+    } else {
+      answer = "Absolutely not. I had no reason to want him dead. Why would I?";
+    }
+  } else if (qIndex === 5) { // Alibi
+    if (isKiller) {
+      const vagueAlibi = [
+        "I was alone, taking a walk in the garden. No one saw me, I'm afraid.",
+        "I stepped out for some fresh air around 9 PM. Can't say exactly where.",
+        "I was in the library, I think. Or was it the conservatory? It's all a blur.",
+        "I moved between rooms. Hard to pinpoint exact locations."
+      ];
+      answer = vagueAlibi[Math.floor(Math.random() * vagueAlibi.length)];
+      answer += " [SUSPICIOUS - No one can verify their whereabouts]";
+    } else {
+      const solidAlibi = [
+        `I was in the ${suspectData.room} with at least two other people between 8 and 10 PM.`,
+        `Multiple guests saw me in the ${suspectData.room}. I never left that area.`,
+        `I can account for my time. I was in the ${suspectData.room} the entire evening.`
+      ];
+      answer = solidAlibi[Math.floor(Math.random() * solidAlibi.length)];
+      answer += " [CONFIDENT - Their alibi is verifiable]";
+    }
+  }
+  
+  responseBox.innerHTML = `<strong>${suspectData.name}:</strong><br>"${answer}"`;
+  addDialogue(`You asked ${suspectData.name}: "${question}"`);
+  
+  // Show suspect's background info if first question
+  if (qIndex === 0) {
+    addDialogue(`Background: ${suspectData.background}`, false);
+  }
+  
+  wittyComment();
+}
+
+function closeInterrogationModal() {
+  document.getElementById("interrogation-modal").style.display = "none";
+  currentInterrogationSuspect = null;
+}
+
+// ======================= ACCUSATION =========================
+function openAccusationModal() {
+  document.getElementById("accusation-modal").style.display = "block";
+  
+  const susDiv = document.getElementById("acc-suspects");
+  susDiv.innerHTML = "";
+  for (let s in SUSPECTS) {
+    const item = document.createElement("div");
+    item.className = "selection-item";
+    item.dataset.suspect = s;
+    
+    const icon = document.createElement("div");
+    icon.className = "selection-icon";
+    icon.innerText = SUSPECTS[s].portrait;
+    
+    const label = document.createElement("div");
+    label.className = "selection-label";
+    label.innerText = SUSPECTS[s].name;
+    
+    item.appendChild(icon);
+    item.appendChild(label);
+    item.onclick = () => selectItem(item, "suspect");
+    susDiv.appendChild(item);
+  }
+  
+  const weapDiv = document.getElementById("acc-weapons");
+  weapDiv.innerHTML = "";
+  WEAPONS.forEach(w => {
+    const item = document.createElement("div");
+    item.className = "selection-item";
+    item.dataset.weapon = w.name;
+    
+    const icon = document.createElement("div");
+    icon.className = "selection-icon";
+    icon.innerText = w.icon;
+    
+    const label = document.createElement("div");
+    label.className = "selection-label";
+    label.innerText = w.name;
+    
+    item.appendChild(icon);
+    item.appendChild(label);
+    item.onclick = () => selectItem(item, "weapon");
+    weapDiv.appendChild(item);
+  });
+  
+  const motiveDiv = document.getElementById("acc-motives");
+  motiveDiv.innerHTML = "";
+  MOTIVES.forEach(m => {
+    const item = document.createElement("div");
+    item.className = "selection-item";
+    item.dataset.motive = m.name;
+    
+    const icon = document.createElement("div");
+    icon.className = "selection-icon";
+    icon.innerText = m.icon;
+    
+    const label = document.createElement("div");
+    label.className = "selection-label";
+    label.innerText = m.label;
+    
+    item.appendChild(icon);
+    item.appendChild(label);
+    item.onclick = () => selectItem(item, "motive");
+    motiveDiv.appendChild(item);
+  });
+}
+
+function selectItem(element, type) {
+  const container = element.parentElement;
+  container.querySelectorAll(".selection-item").forEach(item => {
+    item.classList.remove("selected");
+  });
+  element.classList.add("selected");
+}
+
+function closeAccusationModal() {
+  document.getElementById("accusation-modal").style.display = "none";
+}
+
+function submitAccusation() {
+  const selectedSuspect = document.querySelector("#acc-suspects .selection-item.selected");
+  const selectedWeapon = document.querySelector("#acc-weapons .selection-item.selected");
+  const selectedMotive = document.querySelector("#acc-motives .selection-item.selected");
+  
+  if (!selectedSuspect || !selectedWeapon || !selectedMotive) {
+    alert("Please select a suspect, weapon, and motive!");
+    return;
+  }
+  
+  const sus = selectedSuspect.dataset.suspect;
+  const weap = selectedWeapon.dataset.weapon;
+  const mot = selectedMotive.dataset.motive;
+  
+  guessAttempts++;
+  let correctCount = 0;
+  let feedback = [];
+  
+  if (sus === killer) {
+    correctCount++;
+    feedback.push("✓ Correct suspect");
+  } else {
+    feedback.push(`✗ Wrong suspect (You chose ${SUSPECTS[sus].name})`);
+  }
+  
+  if (weap === weapon) {
+    correctCount++;
+    feedback.push("✓ Correct weapon");
+  } else {
+    feedback.push(`✗ Wrong weapon (You chose ${weap})`);
+  }
+  
+  if (mot === motive) {
+    correctCount++;
+    feedback.push("✓ Correct motive");
+  } else {
+    feedback.push(`✗ Wrong motive (You chose ${mot})`);
+  }
+  
+  if (correctCount === 3) {
+    addDialogue("═══════════════════════════════════", true);
+    addDialogue("🎉 CASE SOLVED! Congratulations Detective!", true);
+    addDialogue(`${SUSPECTS[killer].name} committed the murder using a ${weapon}, motivated by ${motive}.`, true);
+    addDialogue("Your brilliant deduction has brought justice to Vale Mansion!", true);
+    addDialogue("═══════════════════════════════════", true);
+    closeAccusationModal();
+  } else {
+    addDialogue("═══════════════════════════════════");
+    addDialogue(`❌ Incorrect accusation. You got ${correctCount} out of 3 correct.`);
+    feedback.forEach(f => addDialogue(f));
+    
+    if (guessAttempts >= 3) {
+      addDialogue("═══════════════════════════════════");
+      addDialogue("💀 You've made too many wrong accusations. The killer has escaped...");
+      addDialogue(`The truth: ${SUSPECTS[killer].name} murdered Reginald Vale using ${weapon}, motivated by ${motive}.`);
+      addDialogue("═══════════════════════════════════");
+      setTimeout(() => {
+        if (confirm("Case failed. Would you like to try again?")) {
+          location.reload();
+        }
+      }, 2000);
+    } else {
+      addDialogue(`You have ${3 - guessAttempts} attempt(s) remaining.`);
+      addDialogue("═══════════════════════════════════");
+    }
+    closeAccusationModal();
+  }
+}
+
+// ======================= START =========================
+function startGame() {
+  document.getElementById("intro-screen").style.display = "none";
+  document.getElementById("game-container").style.display = "flex";
+  
+  // Randomize which items have clues
+  randomizeClues();
+  
+  addDialogue("═══════════════════════════════════");
+  addDialogue("🔍 You arrive at Vale Mansion on a cold October evening.");
+  addDialogue("The police have secured the scene. Six suspects remain.");
+  addDialogue("Your task: Identify the killer, the weapon, and the motive.");
+  addDialogue("═══════════════════════════════════");
+  addDialogue("Begin your investigation by exploring the rooms...");
+  addDialogue("💡 Tip: Not all items contain evidence. Examine carefully!");
+  showRoom();
+}
+
+window.onload = () => {
+  // Game will start when user clicks the start button
+  console.log("Game loaded. Click START to begin investigation.");
+};
+</script>
+</body>
+</html>
